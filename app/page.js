@@ -26,6 +26,7 @@ export default function Home() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [bossLink, setBossLink] = useState('');
+  const [videoFile, setVideoFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -134,6 +135,34 @@ export default function Home() {
     setSaving(false);
   }
 
+  async function uploadTestVideo() {
+    if (!videoFile) {
+      setMessage('请先选择一个测试视频。');
+      return;
+    }
+
+    setSaving(true);
+    const formData = new FormData();
+    formData.append('video', videoFile);
+    const response = await fetch('/api/test-video', {
+      method: 'POST',
+      body: formData
+    });
+    const payload = await response.json();
+
+    if (!response.ok) {
+      setMessage(payload.error || '测试视频上传失败。');
+      setSaving(false);
+      return;
+    }
+
+    setState(payload);
+    setVideoFile(null);
+    setSelectedTaskId(payload.uploadedVideoResult?.taskId || primaryTasks(payload.tasks || [])[0]?.id || payload.tasks?.[0]?.id);
+    setMessage(`测试视频已入库：${payload.uploadedVideoResult?.localPath}`);
+    setSaving(false);
+  }
+
   if (loading) {
     return <main className="loading">正在打开驾驶舱...</main>;
   }
@@ -159,12 +188,28 @@ export default function Home() {
       <section className="agent-input">
         <div>
           <strong>二创剪辑 Agent</strong>
-          <span>从素材采集 Agent 接任务，或直接接收老板输入的视频链接。</span>
+          <span>上传真实视频测试，或直接输入一个需要二创的视频链接。</span>
+        </div>
+        <label className="file-pick">
+          <input
+            type="file"
+            accept="video/mp4,video/quicktime,video/webm"
+            onChange={event => setVideoFile(event.target.files?.[0] || null)}
+          />
+          <span>{videoFile ? videoFile.name : '选择测试视频'}</span>
+        </label>
+        <button disabled={saving} onClick={uploadTestVideo}>上传入库</button>
+      </section>
+
+      <section className="agent-input compact">
+        <div>
+          <strong>链接输入</strong>
+          <span>没有视频文件时，也可以按老板输入链接流程测试。</span>
         </div>
         <input
           value={bossLink}
           onChange={event => setBossLink(event.target.value)}
-          placeholder="粘贴需要二创的视频链接，可留空处理素材队列"
+          placeholder="粘贴需要二创的视频链接，可留空处理已入库素材"
         />
         <button disabled={saving} onClick={runEditorAgent}>运行剪辑 Agent</button>
       </section>
