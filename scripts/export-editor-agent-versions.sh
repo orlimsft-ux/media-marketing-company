@@ -33,7 +33,7 @@ safe_base="$(printf '%s' "$base_name" | sed 's/[^A-Za-z0-9._-]/-/g; s/^-*//; s/-
 if [ -z "$safe_base" ]; then
   safe_base="test-video"
 fi
-font_file="/System/Library/Fonts/Supplemental/Arial.ttf"
+font_file="/System/Library/Fonts/STHeiti\\ Medium.ttc"
 
 make_version() {
   version_id="$1"
@@ -42,13 +42,16 @@ make_version() {
   publish_fit="$4"
   filter="$5"
   duration="$6"
+  audio_filter="$7"
   output="$export_dir/$safe_base-$version_id.mp4"
 
   "$ffmpeg_bin" -y -hide_banner -loglevel error \
     -i "$source_dir/$source_name" \
-    -map 0:v:0 -an -t "$duration" \
+    -map 0:v:0 -map 0:a? -t "$duration" \
     -vf "$filter" \
-    -c:v libx264 -preset veryfast -crf 25 -pix_fmt yuv420p -movflags +faststart \
+    -af "$audio_filter" \
+    -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p \
+    -c:a aac -b:a 128k -movflags +faststart \
     "$output"
 
   printf '{\n  "source": "%s",\n  "output": "%s",\n  "id": "%s",\n  "name": "%s",\n  "editingStyle": "%s",\n  "publishFit": "%s",\n  "note": "Prototype FFmpeg render: real MP4 output with version-specific visual treatment; not yet a semantic scene-aware edit."\n}\n' \
@@ -62,22 +65,25 @@ make_version() {
 }
 
 make_version "v1" \
-  "观点口播版" \
-  "竖屏裁切 + 顶部观点条 + 底部行动引导" \
-  "视频号首发，适合建立观点和信任" \
-  "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.06:saturation=1.08,drawbox=x=0:y=0:w=iw:h=210:color=black@0.62:t=fill,drawbox=x=0:y=1710:w=iw:h=210:color=black@0.62:t=fill,drawtext=fontfile=$font_file:text='V1 POV TALK':fontcolor=white:fontsize=54:x=64:y=72,drawtext=fontfile=$font_file:text='Hook first. Service scene last.':fontcolor=white:fontsize=38:x=64:y=1780" \
-  "45"
+  "亲情情绪版" \
+  "竖屏裁切 + 温柔标题 + 结尾情绪钩子" \
+  "适合视频号首发，主打共鸣和评论互动" \
+  "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.04:saturation=1.08,drawbox=x=0:y=0:w=iw:h=250:color=black@0.58:t=fill,drawbox=x=0:y=1630:w=iw:h=290:color=black@0.58:t=fill,drawtext=fontfile=$font_file:text='孩子学会骑车那一刻':fontcolor=white:fontsize=56:x=64:y=72,drawtext=fontfile=$font_file:text='最难的不是扶住他':fontcolor=white:fontsize=44:x=64:y=1668,drawtext=fontfile=$font_file:text='是敢慢慢放手':fontcolor=white:fontsize=52:x=64:y=1734" \
+  "22" \
+  "aresample=async=1,volume=1.15"
 
 make_version "v2" \
   "反差快剪版" \
-  "短时长 + 轻微加速 + 高对比 + 大字卡" \
-  "适合测试完播率和转发" \
-  "setpts=0.82*PTS,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.24:saturation=1.35,drawbox=x=36:y=88:w=1008:h=168:color=red@0.72:t=fill,drawtext=fontfile=$font_file:text='V2 FAST CUT':fontcolor=white:fontsize=64:x=76:y=135,drawbox=x=36:y=1500:w=1008:h=230:color=black@0.58:t=fill,drawtext=fontfile=$font_file:text='Pattern interrupt / quick punchline':fontcolor=white:fontsize=40:x=76:y=1588" \
-  "28"
+  "加速 + 高对比 + 强冲突大字卡" \
+  "适合测试完播率，标题更抓人" \
+  "setpts=0.78*PTS,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.22:saturation=1.28,drawbox=x=42:y=78:w=996:h=190:color=red@0.78:t=fill,drawtext=fontfile=$font_file:text='别急着替孩子用力':fontcolor=white:fontsize=58:x=78:y=130,drawbox=x=42:y=1430:w=996:h=260:color=black@0.60:t=fill,drawtext=fontfile=$font_file:text='他真正需要的':fontcolor=white:fontsize=50:x=78:y=1508,drawtext=fontfile=$font_file:text='可能只是你退后一步':fontcolor=white:fontsize=50:x=78:y=1582" \
+  "18" \
+  "atempo=1.28,aresample=async=1,volume=1.12"
 
 make_version "v3" \
-  "清单教学版" \
-  "竖屏裁切 + 三段标题 + 教学感结构" \
-  "适合沉淀专业感和私信转化" \
-  "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.02:saturation=0.96,drawbox=x=0:y=0:w=iw:h=150:color=blue@0.58:t=fill,drawtext=fontfile=$font_file:text='V3 TEACHING':fontcolor=white:fontsize=52:x=58:y=52,drawbox=x=60:y=420:w=520:h=90:color=black@0.56:t=fill,drawtext=fontfile=$font_file:text='1  Problem':fontcolor=white:fontsize=40:x=88:y=445,drawbox=x=60:y=820:w=520:h=90:color=black@0.56:t=fill,drawtext=fontfile=$font_file:text='2  Method':fontcolor=white:fontsize=40:x=88:y=845,drawbox=x=60:y=1220:w=520:h=90:color=black@0.56:t=fill,drawtext=fontfile=$font_file:text='3  Action':fontcolor=white:fontsize=40:x=88:y=1245" \
-  "60"
+  "成长方法版" \
+  "三段式字幕 + 教学感结构 + 评论引导" \
+  "适合做家庭教育/成长类账号沉淀" \
+  "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.03:saturation=1.02,drawbox=x=0:y=0:w=iw:h=170:color=blue@0.62:t=fill,drawtext=fontfile=$font_file:text='孩子学骑车的3个瞬间':fontcolor=white:fontsize=50:x=58:y=58,drawbox=x=58:y=420:w=780:h=94:color=black@0.58:t=fill,drawtext=fontfile=$font_file:text='1  先陪跑  给安全感':fontcolor=white:fontsize=40:x=88:y=446,drawbox=x=58:y=810:w=780:h=94:color=black@0.58:t=fill,drawtext=fontfile=$font_file:text='2  再松手  给空间':fontcolor=white:fontsize=40:x=88:y=836,drawbox=x=58:y=1200:w=860:h=94:color=black@0.58:t=fill,drawtext=fontfile=$font_file:text='3  最后看着他自己往前':fontcolor=white:fontsize=40:x=88:y=1226,drawbox=x=0:y=1700:w=iw:h=220:color=black@0.55:t=fill,drawtext=fontfile=$font_file:text='你第一次放手是什么时候？':fontcolor=white:fontsize=46:x=64:y=1780" \
+  "22" \
+  "aresample=async=1,volume=1.1"
