@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addUploadedTestVideo, getDb, saveDb } from '../../../lib/local-db';
+import { addUploadedTestVideo, getDb, runEditorAgent, saveDb } from '../../../lib/local-db';
 
 const maxUploadSize = 60 * 1024 * 1024;
 const allowedTypes = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
@@ -21,16 +21,18 @@ export async function POST(request) {
   }
 
   const db = await getDb();
-  const result = await addUploadedTestVideo(db, {
+  const uploadResult = await addUploadedTestVideo(db, {
     name: video.name || 'test-video.mp4',
     type: video.type || '',
     arrayBuffer: await video.arrayBuffer()
   });
+  const editorResult = runEditorAgent(uploadResult.db);
 
-  await saveDb(result.db);
+  await saveDb(editorResult.db);
 
   return NextResponse.json({
-    ...result.db,
-    uploadedVideoResult: result.uploadedVideoResult
+    ...editorResult.db,
+    uploadedVideoResult: uploadResult.uploadedVideoResult,
+    editorAgentResult: editorResult.run
   });
 }

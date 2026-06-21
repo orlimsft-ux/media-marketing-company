@@ -159,7 +159,7 @@ export default function Home() {
     setState(payload);
     setVideoFile(null);
     setSelectedTaskId(payload.uploadedVideoResult?.taskId || primaryTasks(payload.tasks || [])[0]?.id || payload.tasks?.[0]?.id);
-    setMessage(`测试视频已入库：${payload.uploadedVideoResult?.localPath}`);
+    setMessage(payload.editorAgentResult?.summary || `测试视频已入库：${payload.uploadedVideoResult?.localPath}`);
     setSaving(false);
   }
 
