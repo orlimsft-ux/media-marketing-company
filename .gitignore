@@ -6,3 +6,7 @@ build/
 *.log
 *.tmp
 data/local-db.json
+assets/source-videos/*
+assets/exports/*
+!assets/source-videos/.gitkeep
+!assets/exports/.gitkeep

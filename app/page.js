@@ -28,6 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [workDayMessage, setWorkDayMessage] = useState('');
+  const [materialAgentMessage, setMaterialAgentMessage] = useState('');
 
   async function loadState() {
     const response = await fetch('/api/state', { cache: 'no-store' });
@@ -95,9 +96,30 @@ export default function Home() {
     setSaving(false);
   }
 
+  async function runMaterialAgent() {
+    setSaving(true);
+    const response = await fetch('/api/material-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const payload = await response.json();
+    setState(payload);
+    setMaterialAgentMessage(payload.materialAgentResult?.summary || '素材采集 Agent 已完成巡检。');
+    setSaving(false);
+  }
+
   if (loading) {
     return <main className="loading">正在启动媒体营销公司后端...</main>;
   }
+
+  const editingProjects = state.editingProjects || [];
+  const materialSources = state.materialSources || [];
+  const tasks = state.tasks || [];
+  const workDays = state.workDays || [];
+  const agents = state.agents || [];
+  const videos = state.videos || [];
+  const materialQueue = state.materialQueue || [];
+  const materialAgentRuns = state.materialAgentRuns || [];
 
   return (
     <div className="shell">
@@ -110,6 +132,8 @@ export default function Home() {
           <a href="#review">待我审核</a>
           <a href="#workdays">工作日</a>
           <a href="#edit">剪辑项目</a>
+          <a href="#material-agent">素材 Agent</a>
+          <a href="#sources">素材采集</a>
           <a href="#agents">Agent 员工</a>
           <a href="#videos">热点视频</a>
         </nav>
@@ -135,10 +159,10 @@ export default function Home() {
         </header>
 
         <section className="metrics">
-          <Metric label="待审核" value={countByStatus(state.tasks, 'waiting_review')} note="老板优先处理" />
-          <Metric label="剪辑中" value={state.editingProjects.filter(project => project.status !== 'approved').length} note="视频制作队列" />
-          <Metric label="今日任务" value={state.tasks.length} note="持续工作项" />
-          <Metric label="工作日" value={state.workDays.length} note="已创建批次" />
+          <Metric label="待审核" value={countByStatus(tasks, 'waiting_review')} note="老板优先处理" />
+          <Metric label="剪辑中" value={editingProjects.filter(project => project.status !== 'approved').length} note="视频制作队列" />
+          <Metric label="今日任务" value={tasks.length} note="持续工作项" />
+          <Metric label="工作日" value={workDays.length} note="已创建批次" />
         </section>
 
         <section className="section" id="workdays">
@@ -147,7 +171,7 @@ export default function Home() {
             <p>每一天都是一个运营批次。后续定时任务会每天自动创建这里的工作日。</p>
           </div>
           <div className="workday-grid">
-            {state.workDays.length ? state.workDays.map(workDay => (
+            {workDays.length ? workDays.map(workDay => (
               <article className="workday-card" key={workDay.id}>
                 <div className="row">
                   <h3>{workDay.date}</h3>
@@ -155,8 +179,8 @@ export default function Home() {
                 </div>
                 <p>{workDay.goal}</p>
                 <div className="tags">
-                  <span>{state.tasks.filter(task => task.workDayId === workDay.id).length} 个任务</span>
-                  <span>{state.editingProjects.filter(project => project.workDayId === workDay.id).length} 个剪辑项目</span>
+                  <span>{tasks.filter(task => task.workDayId === workDay.id).length} 个任务</span>
+                  <span>{editingProjects.filter(project => project.workDayId === workDay.id).length} 个剪辑项目</span>
                 </div>
               </article>
             )) : (
@@ -175,7 +199,7 @@ export default function Home() {
               <p>点击任务查看交付物、关联视频和反馈历史。你的操作会真实写入本地后端。</p>
             </div>
             <div className="task-list">
-              {state.tasks.map(task => (
+              {tasks.map(task => (
                 <button
                   key={task.id}
                   className={`task-card ${task.id === selectedTask?.id ? 'selected' : ''}`}
@@ -249,7 +273,7 @@ export default function Home() {
             <p>剪辑员不再只是写脚本，而是要进入真实视频制作流程：脚本、分镜、素材、剪辑版本、成片链接。</p>
           </div>
           <div className="editing-grid">
-            {state.editingProjects.map(project => (
+            {editingProjects.map(project => (
               <article className="editing-card" key={project.id}>
                 <div className="row">
                   <h3>{project.title}</h3>
@@ -257,14 +281,83 @@ export default function Home() {
                 </div>
                 <p>{project.goal}</p>
                 <div className="edit-steps">
-                  {project.steps.map(step => (
+                  {(project.steps || []).map(step => (
                     <span className={step.done ? 'done' : ''} key={step.name}>{step.name}</span>
                   ))}
                 </div>
+                <p><strong>素材状态：</strong>{materialStatusLabel(project.materialStatus)}</p>
+                <p><strong>源文件：</strong>{project.sourceFile || '未提供'}</p>
+                <p><strong>成片：</strong>{project.outputUrl || '未输出'}</p>
                 <p><strong>当前版本：</strong>{project.version}</p>
                 <p><strong>下一步：</strong>{project.nextAction}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="section" id="sources">
+          <div className="section-head">
+            <h2>素材采集</h2>
+            <p>二号员工先打开这些热榜入口，找到具体 Top3 视频页；如果页面提供原生下载，就保存到素材目录进入剪辑。</p>
+          </div>
+          <div className="source-grid">
+            {materialSources.length ? materialSources.map(source => (
+              <article className="source-card" key={source.id}>
+                <div className="row">
+                  <h3>{source.platform}</h3>
+                  <span className="status in_progress">{sourceStatusLabel(source.status)}</span>
+                </div>
+                <p><strong>{source.name}</strong></p>
+                <a href={source.url} target="_blank" rel="noreferrer">{source.url}</a>
+                <p>{source.downloadPolicy}</p>
+              </article>
+            )) : (
+              <article className="source-card">
+                <h3>还没有素材来源</h3>
+                <p>先为二号员工添加抖音、小红书、快手的热榜入口。</p>
+              </article>
+            )}
+          </div>
+        </section>
+
+        <section className="section" id="material-agent">
+          <div className="section-head">
+            <h2>素材采集 Agent</h2>
+            <p>这个 Agent 负责巡检素材队列、下载状态和本地素材库，只使用平台自己提供的下载入口。</p>
+          </div>
+          <div className="agent-console">
+            <div className="agent-command">
+              <div>
+                <strong>运行一次素材巡检</strong>
+                <span>检查下载目录、素材目录和三平台素材队列，自动更新二号员工任务。</span>
+              </div>
+              <button disabled={saving} onClick={runMaterialAgent}>运行 Agent</button>
+            </div>
+            {materialAgentMessage ? <p className="notice">{materialAgentMessage}</p> : null}
+            <div className="queue-grid">
+              {materialQueue.map(item => (
+                <article className="queue-card" key={item.id}>
+                  <div className="row">
+                    <h3>{item.platform}</h3>
+                    <span className={`status ${queueStatusClass(item.status)}`}>{materialQueueStatusLabel(item.status)}</span>
+                  </div>
+                  <strong>{item.title}</strong>
+                  <a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.sourceUrl}</a>
+                  <p>{item.note}</p>
+                  <p><strong>本地文件：</strong>{item.localPath || '未入库'}</p>
+                </article>
+              ))}
+            </div>
+            <div className="agent-runs">
+              <h3>最近汇报</h3>
+              {materialAgentRuns.length ? materialAgentRuns.slice(0, 4).map(run => (
+                <article key={run.id}>
+                  <strong>{run.summary}</strong>
+                  <span>{run.createdAt}</span>
+                  <p>可剪 {run.stats?.ready || 0} · 下载中 {run.stats?.downloading || 0} · 队列 {run.stats?.queue || 0}</p>
+                </article>
+              )) : <p>还没有运行记录。</p>}
+            </div>
           </div>
         </section>
 
@@ -274,7 +367,7 @@ export default function Home() {
             <p>后续每个 Agent 会接入自动任务：每天生成任务、提交产出、等待老板审核。</p>
           </div>
           <div className="agent-grid">
-            {state.agents.map(agent => (
+            {agents.map(agent => (
               <article className="agent-card" key={agent.id}>
                 <div className="row">
                   <h3>{agent.name}</h3>
@@ -293,7 +386,7 @@ export default function Home() {
             <p>现在先用样例数据，下一步会让热点分析员每天新增 Top10。</p>
           </div>
           <div className="video-grid">
-            {state.videos.map(video => (
+            {videos.map(video => (
               <article className="video-card" key={video.id}>
                 <span className="rank">{video.rank}</span>
                 <h3>{video.title}</h3>
@@ -331,4 +424,38 @@ function defaultComment(action) {
   if (action === 'return') return '退回修改，请按要求重新提交。';
   if (action === 'block') return '暂时阻塞，等待老板进一步判断。';
   return '继续推进下一步。';
+}
+
+function materialStatusLabel(status) {
+  if (status === 'missing_source_video') return '缺少原始视频';
+  if (status === 'platform_source_pending_check') return '待检查平台下载';
+  if (status === 'ready') return '素材已就绪';
+  if (status === 'editing') return '剪辑中';
+  if (status === 'exported') return '已输出成片';
+  return '待确认';
+}
+
+function sourceStatusLabel(status) {
+  if (status === 'platform_source_found') return '已找到入口';
+  if (status === 'downloadable') return '平台可下载';
+  if (status === 'download_in_progress') return '下载中';
+  if (status === 'checked_no_web_download') return '网页不可下载';
+  if (status === 'downloaded') return '已下载';
+  return '待检查';
+}
+
+function materialQueueStatusLabel(status) {
+  if (status === 'downloadable') return '可下载';
+  if (status === 'download_in_progress') return '下载中';
+  if (status === 'downloaded') return '已入库';
+  if (status === 'reference_only') return '仅参考';
+  if (status === 'failed') return '失败';
+  return '待检查';
+}
+
+function queueStatusClass(status) {
+  if (status === 'downloaded') return 'approved';
+  if (status === 'download_in_progress' || status === 'downloadable') return 'in_progress';
+  if (status === 'failed' || status === 'reference_only') return 'returned';
+  return 'todo';
 }
