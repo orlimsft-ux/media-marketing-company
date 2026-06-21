@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>媒体营销公司 · Agent 管理系统</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #151716;
+      --muted: #626961;
+      --line: #d8ddd5;
+      --paper: #f6f4ee;
+      --panel: #fff;
+      --soft: #f1f4ef;
+      --green: #246b52;
+      --blue: #2f5f9d;
+      --red: #a84d42;
+      --amber: #b8781d;
+      --purple: #6554a8;
+      --shadow: 0 18px 44px rgba(21, 23, 22, .10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    h1, h2, h3, p, span, strong, button { overflow-wrap: anywhere; }
+
+    .shell {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      padding: 22px 16px;
+      border-right: 1px solid var(--line);
+      background: #fbfaf6;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 900;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--ink);
+      background: #fff;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    svg { width: 18px; height: 18px; }
+
+    .nav {
+      display: grid;
+      align-content: start;
+      gap: 7px;
+    }
+
+    .nav a {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 11px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: #333833;
+    }
+
+    .nav a:hover, .nav a.active {
+      background: #fff;
+      border-color: var(--line);
+    }
+
+    .manager-note {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 13px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .manager-note strong { font-size: 15px; }
+    .manager-note span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 26px clamp(18px, 4vw, 48px) 56px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(36px, 5vw, 72px);
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 720px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .today-card {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 12px 14px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .today-card strong { display: block; }
+    .today-card span { color: var(--muted); font-size: 13px; }
+
+    .section {
+      padding-top: 28px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(27px, 3.4vw, 46px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 15px;
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .metric strong {
+      font-size: clamp(28px, 3vw, 40px);
+      line-height: 1;
+    }
+
+    .metric b {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .manager-workspace {
+      display: grid;
+      grid-template-columns: minmax(310px, .42fr) minmax(0, .58fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .queue, .detail-panel, .agent-column, .video-card, .campaign-card, .recap-card {
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .queue {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .queue-filter {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 4px;
+    }
+
+    .filter-btn, .small-btn {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 0 10px;
+    }
+
+    .filter-btn.active, .small-btn:hover {
+      border-color: var(--ink);
+      box-shadow: 4px 4px 0 rgba(21, 23, 22, .10);
+    }
+
+    .task-row {
+      width: 100%;
+      min-height: 118px;
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      padding: 12px;
+      text-align: left;
+      display: grid;
+      gap: 9px;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .task-row:hover, .task-row.selected {
+      background: #fff;
+      border-color: var(--ink);
+      box-shadow: 5px 5px 0 rgba(21, 23, 22, .12);
+    }
+
+    .row-top, .meta-row, .panel-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .task-title {
+      font-weight: 900;
+      line-height: 1.28;
+    }
+
+    .task-row p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .tag, .status {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #4f554f;
+      padding: 4px 7px;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .status {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .status.waiting_review { color: var(--red); border-color: #e3bbb6; background: #fff5f3; }
+    .status.in_progress { color: var(--blue); border-color: #c7d3ee; background: #f2f5fd; }
+    .status.approved { color: var(--green); border-color: #bfd4c6; background: #f1f8f3; }
+    .status.returned { color: var(--amber); border-color: #e7d0aa; background: #fff8eb; }
+    .status.blocked { color: var(--purple); border-color: #cec7ec; background: #f6f4ff; }
+
+    .detail-panel {
+      position: sticky;
+      top: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .lights { display: flex; gap: 7px; }
+    .lights span {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .lights span:nth-child(2) { background: var(--amber); }
+    .lights span:nth-child(3) { background: var(--green); }
+
+    .panel-body {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-body h3 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.08;
+    }
+
+    .panel-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .block {
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      padding: 13px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .block h4 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .block p, .block li {
+      color: #303430;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .block ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .history {
+      display: grid;
+      gap: 8px;
+    }
+
+    .history-item {
+      border-left: 3px solid var(--green);
+      background: #fff;
+      padding: 9px 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .history-item.return { border-left-color: var(--amber); }
+    .history-item strong { font-size: 13px; }
+    .history-item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 12px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .btn {
+      min-height: 42px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      padding: 0 12px;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn.warn {
+      background: #fff8eb;
+      color: var(--amber);
+      border-color: #e7d0aa;
+    }
+
+    .btn.blue {
+      background: #f2f5fd;
+      color: var(--blue);
+      border-color: #c7d3ee;
+    }
+
+    .agent-grid, .video-grid, .campaign-grid, .recap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .agent-column {
+      min-width: 0;
+      display: grid;
+      align-content: start;
+    }
+
+    .agent-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+    }
+
+    .agent-head h3, .video-card h3, .campaign-card h3, .recap-card h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.22;
+    }
+
+    .agent-head p, .video-card p, .campaign-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .agent-tasks {
+      padding: 12px;
+      background: #f8faf7;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-task {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .video-card, .campaign-card, .recap-card {
+      padding: 14px;
+      min-height: 190px;
+      display: grid;
+      align-content: start;
+      gap: 11px;
+    }
+
+    .rank {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-weight: 900;
+    }
+
+    .rank.hot {
+      color: #fff;
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .video-title {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .score {
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .pipe-step {
+      min-height: 76px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .pipe-step.active {
+      border-color: var(--ink);
+      box-shadow: 4px 4px 0 rgba(21, 23, 22, .10);
+    }
+
+    .pipe-step strong { font-size: 13px; line-height: 1.25; }
+    .pipe-step span { color: var(--muted); font-size: 12px; }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: min(360px, calc(100vw - 44px));
+      border: 1px solid var(--ink);
+      background: #fff;
+      box-shadow: 6px 6px 0 rgba(21, 23, 22, .16);
+      padding: 13px 14px;
+      color: #303430;
+      line-height: 1.45;
+      transform: translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 16px clamp(18px, 4vw, 48px);
+        grid-template-rows: auto auto;
+      }
+      .nav {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .nav a { flex: 0 0 auto; }
+      .manager-note { display: none; }
+      .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .manager-workspace { grid-template-columns: 1fr; }
+      .detail-panel { position: static; }
+      .pipeline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 840px) {
+      .topbar, .section-head, .panel-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav {
+        flex-wrap: wrap;
+        overflow-x: visible;
+      }
+      .nav a {
+        flex: 1 1 118px;
+      }
+      .today-card { text-align: left; }
+      .metrics, .agent-grid, .video-grid, .campaign-grid, .recap-grid {
+        grid-template-columns: 1fr;
+      }
+      .actions, .queue-filter {
+        grid-template-columns: 1fr;
+      }
+      .pipeline { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .main { padding-top: 20px; }
+      .status { white-space: normal; }
+      .meta-row, .row-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .pipeline { grid-template-columns: 1fr; }
+      .panel-body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h16"/><path d="M18 10l3 2-3 2"/></svg>
+        </span>
+        <span>媒体营销公司</span>
+      </div>
+      <nav class="nav" aria-label="控制台导航">
+        <a class="active" href="#review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>待我审核</a>
+        <a href="#agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Agent</a>
+        <a href="#videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14s-1.5 2 1 4a4 4 0 0 0 6 0c2-2.5 0-5-1-6s-1.5-3 0-5c-4 1-7 4-6 7z"/></svg>视频</a>
+        <a href="#campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11v2a4 4 0 0 0 4 4h1"/><path d="M20 7v10"/><path d="M12 7l8-4v18l-8-4z"/><path d="M12 7H8a4 4 0 0 0-4 4"/></svg>推广</a>
+        <a href="#recap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 1-2-1.5z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>复盘</a>
+      </nav>
+      <div class="manager-note">
+        <strong>老板视角</strong>
+        <span>第二版重点不是展示更多卡片，而是让每次审核都有记录，让每个内容项目能从热点一路追到推广结果。</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Media marketing company operating system</p>
+          <h1>一人公司 Agent 管理系统</h1>
+          <p class="lead">老板打开后先处理待审核，再看 Agent 状态、热点详情、推广记录和每日复盘。所有反馈都会留下历史，方便评估员工和复盘内容质量。</p>
+        </div>
+        <div class="today-card">
+          <strong>今日运营日</strong>
+          <span>2026-06-21 · V2 原型</span>
+        </div>
+      </header>
+
+      <section class="section" aria-label="今日总览">
+        <div class="metrics" id="metrics"></div>
+      </section>
+
+      <section class="section" aria-label="业务流程">
+        <div class="pipeline" id="pipeline"></div>
+      </section>
+
+      <section class="section" id="review">
+        <div class="section-head">
+          <h2>待我审核</h2>
+          <p>这是老板的第一入口。先处理等待审核和退回任务，再决定是否通过、退回、指派下一阶段或标记阻塞。</p>
+        </div>
+        <div class="manager-workspace">
+          <div class="queue">
+            <div class="queue-filter">
+              <button class="filter-btn active" type="button" data-filter="all">全部</button>
+              <button class="filter-btn" type="button" data-filter="waiting_review">待审核</button>
+              <button class="filter-btn" type="button" data-filter="returned">已退回</button>
+            </div>
+            <div id="taskQueue"></div>
+          </div>
+          <aside class="detail-panel" aria-label="任务详情">
+            <div class="panel-head">
+              <div class="lights" aria-hidden="true"><span></span><span></span><span></span></div>
+              <span>task detail & feedback history</span>
+            </div>
+            <div class="panel-body" id="taskDetail"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="agents">
+        <div class="section-head">
+          <h2>Agent 员工</h2>
+          <p>每个 Agent 都有固定输入、输出和验收标准。正式项目里，这些会成为提示词、自动化流程和质量评估规则。</p>
+        </div>
+        <div class="agent-grid" id="agentGrid"></div>
+      </section>
+
+      <section class="section" id="videos">
+        <div class="section-head">
+          <h2>视频详情</h2>
+          <p>Top10 不只是列表，每条热点都要留下数据、爆火原因、二创价值和风险判断。Top3 会进入二创链路。</p>
+        </div>
+        <div class="video-grid" id="videoGrid"></div>
+      </section>
+
+      <section class="section" id="campaigns">
+        <div class="section-head">
+          <h2>推广记录</h2>
+          <p>推广员提交的不只是发布计划，还要记录渠道文案、数据回收、评论洞察和下一步建议。</p>
+        </div>
+        <div class="campaign-grid" id="campaignGrid"></div>
+      </section>
+
+      <section class="section" id="recap">
+        <div class="section-head">
+          <h2>每日复盘</h2>
+          <p>复盘把任务、反馈、推广结果和员工评分汇总成老板第二天能执行的重点。</p>
+        </div>
+        <div class="recap-grid" id="recapGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const statusMap = {
+      todo: '待开始',
+      in_progress: '进行中',
+      waiting_review: '待审核',
+      approved: '已通过',
+      returned: '已退回',
+      blocked: '被阻塞'
+    };
+
+    const stageMap = {
+      discovery: '热点发现',
+      analysis: '热点分析',
+      selection: '选题确认',
+      creative: '二创加工',
+      manager_review: '老板审核',
+      distribution: '推广分发',
+      performance: '数据回收'
+    };
+
+    const agents = [
+      {
+        id: 'agent_hotspot',
+        name: '热点分析员',
+        score: 82,
+        role: '收集全网热门视频 Top10，分析爆火原因、受众情绪和二创价值。',
+        inputs: ['平台热榜', '视频链接', '评论区反馈'],
+        outputs: ['Top10 热点表', 'Top3 推荐', '风险提醒']
+      },
+      {
+        id: 'agent_editor',
+        name: '二创剪辑员',
+        score: 74,
+        role: '把 Top3 热点改写成公司自己的脚本、标题、封面和剪辑方案。',
+        inputs: ['Top3 推荐', '热点分析', '老板反馈'],
+        outputs: ['二创脚本', '标题候选', '剪辑说明']
+      },
+      {
+        id: 'agent_promoter',
+        name: '推广员',
+        score: 80,
+        role: '制定分发计划，改写渠道文案，记录发布数据和评论洞察。',
+        inputs: ['已审核内容', '发布渠道', '推广目标'],
+        outputs: ['推广计划', '发布记录', '数据复盘']
+      }
+    ];
+
+    const videos = [
+      {
+        id: 'video_001',
+        rank: 1,
+        title: '职场人下班后突然爆发的 30 秒',
+        platform: '抖音',
+        score: 98,
+        metrics: '230 万播放 / 18 万赞 / 2.3 万评论',
+        reason: '强情绪共鸣，标题制造冲突，评论区有大量二次表达。',
+        value: '适合切入职场服务、个人 IP、老板视角内容。',
+        risk: '避免直接搬运原视频镜头和原文案。',
+        top3: true
+      },
+      {
+        id: 'video_002',
+        rank: 2,
+        title: '3 个 AI 工具让剪辑效率翻倍',
+        platform: 'B站',
+        score: 94,
+        metrics: '86 万播放 / 5.2 万收藏 / 7400 评论',
+        reason: '实用清单、结果明确、收藏价值高。',
+        value: '适合做工具推荐和服务方案引流。',
+        risk: '工具推荐需要避免夸大承诺。',
+        top3: true
+      },
+      {
+        id: 'video_003',
+        rank: 3,
+        title: '普通人如何把副业做成主业',
+        platform: '小红书',
+        score: 91,
+        metrics: '42 万浏览 / 1.9 万收藏 / 3100 评论',
+        reason: '身份反差、结果承诺、故事线完整。',
+        value: '适合引出一人公司方法论。',
+        risk: '需要补真实案例，避免空泛鸡汤。',
+        top3: true
+      },
+      {
+        id: 'video_004',
+        rank: 4,
+        title: '老板看完沉默的营销预算表',
+        platform: '视频号',
+        score: 87,
+        metrics: '31 万播放 / 1.2 万转发',
+        reason: '冲突标题、老板视角、转发场景强。',
+        value: '适合 B 端获客和咨询转化。',
+        risk: '不要过度制造焦虑。',
+        top3: false
+      }
+    ];
+
+    const tasks = [
+      {
+        id: 'task_analysis_top3',
+        title: '审核 Top3 热度归因报告',
+        owner: 'agent_hotspot',
+        stage: 'analysis',
+        status: 'waiting_review',
+        priority: 'high',
+        due: '12:00',
+        sourceVideo: 'video_001',
+        summary: '热点分析员提交了 Top3 爆火原因、受众情绪和二创价值，等待老板确认是否进入二创。',
+        deliverable: {
+          type: 'analysis_report',
+          version: 1,
+          title: 'Top3 热点归因报告',
+          content: 'Top1 强在标题冲突和评论区共鸣；Top2 强在步骤可复制；Top3 强在身份代入。建议二创时保留传播结构，换成本公司服务场景。'
+        }
+      },
+      {
+        id: 'task_script_top1',
+        title: '审核 Top1 二创脚本',
+        owner: 'agent_editor',
+        stage: 'creative',
+        status: 'waiting_review',
+        priority: 'high',
+        due: '15:00',
+        sourceVideo: 'video_001',
+        summary: '二创剪辑员提交了脚本和标题候选，需要老板判断观点是否足够、转化目标是否清楚。',
+        deliverable: {
+          type: 'creative_asset',
+          version: 2,
+          title: '小公司如何用一条热点视频拿到第一批线索',
+          content: '钩子：为什么小公司追热点总是没结果？结构：热点场景、爆火拆解、迁移到老板视角、给出 3 步内容转化动作。'
+        }
+      },
+      {
+        id: 'task_edit_top2',
+        title: 'Top2 快剪版本重做',
+        owner: 'agent_editor',
+        stage: 'creative',
+        status: 'returned',
+        priority: 'medium',
+        due: '17:30',
+        sourceVideo: 'video_002',
+        summary: '上一版太像搬运，已要求加入旁白观点和服务场景，目前等待二创剪辑员修改。',
+        deliverable: {
+          type: 'creative_asset',
+          version: 1,
+          title: 'AI 工具效率快剪',
+          content: '当前版本素材节奏完整，但观点不足。需要加入“为什么这条能转化”的旁白，减少原视频镜头占比。'
+        }
+      },
+      {
+        id: 'task_distribution_plan',
+        title: '审核 Top3 分发计划',
+        owner: 'agent_promoter',
+        stage: 'distribution',
+        status: 'waiting_review',
+        priority: 'high',
+        due: '16:00',
+        sourceVideo: 'video_003',
+        summary: '推广员规划了小红书、视频号、朋友圈三类渠道，等待老板批准。',
+        deliverable: {
+          type: 'campaign_plan',
+          version: 1,
+          title: 'Top3 分发计划',
+          content: '小红书主打搜索和收藏，视频号主打熟人传播，朋友圈主打案例信任。同一素材做三版标题，不同渠道错峰发布。'
+        }
+      },
+      {
+        id: 'task_data_recovery',
+        title: '回收昨日推广数据',
+        owner: 'agent_promoter',
+        stage: 'performance',
+        status: 'in_progress',
+        priority: 'medium',
+        due: '18:00',
+        sourceVideo: 'video_004',
+        summary: '正在整理曝光、收藏、评论关键词和潜在线索。',
+        deliverable: {
+          type: 'publish_record',
+          version: 1,
+          title: '昨日推广数据初稿',
+          content: '初步发现“能不能帮我做同款”类评论占比最高，建议明天测试服务型 CTA。'
+        }
+      }
+    ];
+
+    const feedbacks = [
+      {
+        id: 'fb_001',
+        taskId: 'task_edit_top2',
+        action: 'return',
+        rating: 68,
+        comment: '节奏可以，但缺少我们的观点。请减少原素材占比，补一段服务场景旁白。',
+        required: ['降低搬运感', '加入商业转化解释', '补封面文案'],
+        at: '11:45'
+      },
+      {
+        id: 'fb_002',
+        taskId: 'task_analysis_top3',
+        action: 'note',
+        rating: 82,
+        comment: '方向对，审核时重点看是否补足转化价值，不要只写传播原因。',
+        required: ['补商业价值', '补风险判断'],
+        at: '10:50'
+      }
+    ];
+
+    const campaigns = [
+      {
+        id: 'campaign_001',
+        title: '职场情绪热点二创分发',
+        status: 'planned',
+        asset: 'Top1 二创脚本',
+        channels: ['小红书', '视频号', '朋友圈'],
+        copy: '小公司追热点，不是为了蹭流量，而是为了找到用户正在关心的问题。',
+        metrics: '待发布',
+        insight: '预计先看收藏率、评论咨询和私信关键词。'
+      },
+      {
+        id: 'campaign_002',
+        title: 'AI 剪辑效率工具复盘',
+        status: 'running',
+        asset: 'Top2 快剪版本',
+        channels: ['B站', '小红书'],
+        copy: '别再收藏一堆工具了，先把你的剪辑流程跑顺。',
+        metrics: '1.2 万浏览 / 240 收藏 / 6 条线索',
+        insight: '服务型 CTA 比工具清单 CTA 更容易引发咨询。'
+      },
+      {
+        id: 'campaign_003',
+        title: '一人公司方法论长尾测试',
+        status: 'review',
+        asset: 'Top3 观点口播',
+        channels: ['视频号', '朋友圈'],
+        copy: '一个人做公司，最先要管理的不是员工，而是流程。',
+        metrics: '待老板审核',
+        insight: '适合做成系列内容，承接咨询转化。'
+      }
+    ];
+
+    let selectedTaskId = 'task_analysis_top3';
+    let activeFilter = 'all';
+
+    const metricsEl = document.querySelector('#metrics');
+    const pipelineEl = document.querySelector('#pipeline');
+    const taskQueueEl = document.querySelector('#taskQueue');
+    const taskDetailEl = document.querySelector('#taskDetail');
+    const agentGridEl = document.querySelector('#agentGrid');
+    const videoGridEl = document.querySelector('#videoGrid');
+    const campaignGridEl = document.querySelector('#campaignGrid');
+    const recapGridEl = document.querySelector('#recapGrid');
+    const toastEl = document.querySelector('#toast');
+
+    function agentName(id) {
+      return agents.find(agent => agent.id === id)?.name || '未分配';
+    }
+
+    function videoById(id) {
+      return videos.find(video => video.id === id);
+    }
+
+    function selectedTask() {
+      return tasks.find(task => task.id === selectedTaskId) || tasks[0];
+    }
+
+    function taskFeedbacks(taskId) {
+      return feedbacks.filter(item => item.taskId === taskId);
+    }
+
+    function renderMetrics() {
+      const waiting = tasks.filter(task => task.status === 'waiting_review').length;
+      const returned = tasks.filter(task => task.status === 'returned').length;
+      const approved = tasks.filter(task => task.status === 'approved').length;
+      const running = tasks.filter(task => task.status === 'in_progress').length;
+      const avgScore = Math.round(agents.reduce((sum, agent) => sum + agent.score, 0) / agents.length);
+      const metrics = [
+        ['待我审核', `${waiting} 项`, waiting ? '优先处理' : '暂无阻塞'],
+        ['退回修改', `${returned} 项`, returned ? '需追踪' : '正常'],
+        ['进行中', `${running} 项`, 'Agent 推进中'],
+        ['已通过', `${approved} 项`, `${tasks.length} 项任务`],
+        ['Agent 均分', `${avgScore}`, '质量评估']
+      ];
+      metricsEl.innerHTML = metrics.map(item => `
+        <article class="metric">
+          <span>${item[0]}</span>
+          <strong>${item[1]}</strong>
+          <b>${item[2]}</b>
+        </article>
+      `).join('');
+    }
+
+    function renderPipeline() {
+      const stages = ['discovery', 'analysis', 'selection', 'creative', 'manager_review', 'distribution', 'performance'];
+      pipelineEl.innerHTML = stages.map(stage => {
+        const count = tasks.filter(task => task.stage === stage).length;
+        return `
+          <article class="pipe-step ${count ? 'active' : ''}">
+            <strong>${stageMap[stage]}</strong>
+            <span>${count} 项任务</span>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderQueue() {
+      const visible = tasks.filter(task => activeFilter === 'all' || task.status === activeFilter);
+      taskQueueEl.innerHTML = visible.map(task => `
+        <button class="task-row ${task.id === selectedTaskId ? 'selected' : ''}" type="button" data-task="${task.id}">
+          <div class="row-top">
+            <span class="task-title">${task.title}</span>
+            <span class="status ${task.status}">${statusMap[task.status]}</span>
+          </div>
+          <p>${task.summary}</p>
+          <div class="meta-row">
+            <span class="tag">${agentName(task.owner)}</span>
+            <span class="tag">${stageMap[task.stage]}</span>
+            <span class="tag">截止 ${task.due}</span>
+          </div>
+        </button>
+      `).join('') || '<div class="block"><p>当前筛选下没有任务。</p></div>';
+    }
+
+    function renderTaskDetail() {
+      const task = selectedTask();
+      const video = videoById(task.sourceVideo);
+      const history = taskFeedbacks(task.id);
+      taskDetailEl.innerHTML = `
+        <div class="panel-top">
+          <div class="meta-row">
+            <span class="status ${task.status}">${statusMap[task.status]}</span>
+            <span class="tag">${agentName(task.owner)}</span>
+            <span class="tag">${stageMap[task.stage]}</span>
+            <span class="tag">${task.priority === 'high' ? '高优先级' : '中优先级'}</span>
+          </div>
+        </div>
+        <h3>${task.title}</h3>
+        <p>${task.summary}</p>
+        <div class="block">
+          <h4>交付物 v${task.deliverable.version} · ${task.deliverable.title}</h4>
+          <p>${task.deliverable.content}</p>
+        </div>
+        <div class="block">
+          <h4>关联视频</h4>
+          <p><strong>${video.rank}. ${video.title}</strong> · ${video.platform} · 热度 <span class="score">${video.score}</span></p>
+          <p>${video.reason}</p>
+          <p>风险：${video.risk}</p>
+        </div>
+        <div class="block">
+          <h4>反馈历史</h4>
+          <div class="history">
+            ${history.length ? history.map(item => `
+              <div class="history-item ${item.action === 'return' ? 'return' : ''}">
+                <strong>${item.at} · ${item.action === 'return' ? '退回修改' : '管理备注'} · 评分 ${item.rating}</strong>
+                <span>${item.comment}</span>
+                <span>要求：${item.required.join(' / ')}</span>
+              </div>
+            `).join('') : '<p>还没有反馈记录。你提交操作后会在这里生成历史。</p>'}
+          </div>
+        </div>
+        <label>
+          <span class="tag">新增老板反馈</span>
+          <textarea id="feedbackInput" placeholder="写下判断、修改要求或下一步指令。"></textarea>
+        </label>
+        <div class="actions">
+          <button class="btn" type="button" data-action="approve">通过</button>
+          <button class="btn warn" type="button" data-action="return">退回</button>
+          <button class="btn blue" type="button" data-action="handoff">指派</button>
+          <button class="btn secondary" type="button" data-action="block">阻塞</button>
+        </div>
+      `;
+    }
+
+    function renderAgents() {
+      agentGridEl.innerHTML = agents.map(agent => {
+        const ownedTasks = tasks.filter(task => task.owner === agent.id);
+        return `
+          <section class="agent-column">
+            <div class="agent-head">
+              <div class="meta-row">
+                <h3>${agent.name}</h3>
+                <span class="tag">评分 ${agent.score}</span>
+              </div>
+              <p>${agent.role}</p>
+              <div class="meta-row">
+                ${agent.outputs.map(output => `<span class="tag">${output}</span>`).join('')}
+              </div>
+            </div>
+            <div class="agent-tasks">
+              ${ownedTasks.map(task => `
+                <article class="mini-task">
+                  <div class="meta-row">
+                    <strong>${task.title}</strong>
+                    <span class="status ${task.status}">${statusMap[task.status]}</span>
+                  </div>
+                  <p>${task.summary}</p>
+                </article>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }).join('');
+    }
+
+    function renderVideos() {
+      videoGridEl.innerHTML = videos.map(video => `
+        <article class="video-card">
+          <div class="video-title">
+            <span class="rank ${video.top3 ? 'hot' : ''}">${video.rank}</span>
+            <div>
+              <h3>${video.title}</h3>
+              <div class="meta-row">
+                <span class="tag">${video.platform}</span>
+                <span class="tag">热度 ${video.score}</span>
+                ${video.top3 ? '<span class="tag">Top3</span>' : ''}
+              </div>
+            </div>
+          </div>
+          <p><strong>数据：</strong>${video.metrics}</p>
+          <p><strong>爆火原因：</strong>${video.reason}</p>
+          <p><strong>营销价值：</strong>${video.value}</p>
+          <p><strong>风险：</strong>${video.risk}</p>
+        </article>
+      `).join('');
+    }
+
+    function renderCampaigns() {
+      campaignGridEl.innerHTML = campaigns.map(campaign => `
+        <article class="campaign-card">
+          <div class="meta-row">
+            <h3>${campaign.title}</h3>
+            <span class="tag">${campaign.status}</span>
+          </div>
+          <p><strong>素材：</strong>${campaign.asset}</p>
+          <div class="meta-row">${campaign.channels.map(channel => `<span class="tag">${channel}</span>`).join('')}</div>
+          <p><strong>文案：</strong>${campaign.copy}</p>
+          <p><strong>数据：</strong>${campaign.metrics}</p>
+          <p><strong>洞察：</strong>${campaign.insight}</p>
+        </article>
+      `).join('');
+    }
+
+    function renderRecap() {
+      const returnCount = tasks.filter(task => task.status === 'returned').length;
+      recapGridEl.innerHTML = [
+        ['今日判断', ['热点分析已经能支撑二创，但仍要补转化价值判断。', '二创脚本需要明确服务场景，避免只复述热点。', '推广计划应先测试服务型 CTA。']],
+        ['问题记录', [`${returnCount} 项任务被退回，说明交付验收标准需要写得更具体。`, '反馈历史开始积累后，可以评估每个 Agent 的稳定短板。', '视频风险判断需要在二创前完成。']],
+        ['明日重点', ['建立每类交付物的评分标准。', '把高频反馈沉淀成 Agent 固定指令。', '推广记录要补线索质量，而不只是浏览数据。']]
+      ].map(card => `
+        <article class="recap-card">
+          <h3>${card[0]}</h3>
+          <div class="block">
+            <ul>${card[1].map(item => `<li>${item}</li>`).join('')}</ul>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 1800);
+    }
+
+    function addFeedback(action, status, message) {
+      const task = selectedTask();
+      const text = document.querySelector('#feedbackInput')?.value.trim();
+      task.status = status;
+      feedbacks.unshift({
+        id: `fb_${Date.now()}`,
+        taskId: task.id,
+        action,
+        rating: action === 'approve' ? 90 : action === 'return' ? 70 : 78,
+        comment: text || message,
+        required: action === 'return' ? ['按反馈修改', '重新提交审核'] : ['进入下一步'],
+        at: '刚刚'
+      });
+      renderAll();
+      showToast(message);
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderPipeline();
+      renderQueue();
+      renderTaskDetail();
+      renderAgents();
+      renderVideos();
+      renderCampaigns();
+      renderRecap();
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(item => item.classList.toggle('active', item === button));
+        renderQueue();
+      });
+    });
+
+    taskQueueEl.addEventListener('click', event => {
+      const row = event.target.closest('button[data-task]');
+      if (!row) return;
+      selectedTaskId = row.dataset.task;
+      renderQueue();
+      renderTaskDetail();
+    });
+
+    taskDetailEl.addEventListener('click', event => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      if (button.dataset.action === 'approve') addFeedback('approve', 'approved', '已通过，并写入反馈历史。');
+      if (button.dataset.action === 'return') addFeedback('return', 'returned', '已退回修改，并写入反馈历史。');
+      if (button.dataset.action === 'handoff') addFeedback('handoff', 'in_progress', '已指派下一步，任务回到进行中。');
+      if (button.dataset.action === 'block') addFeedback('block', 'blocked', '已标记阻塞，等待老板进一步决策。');
+    });
+
+    document.querySelectorAll('.nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav a').forEach(item => item.classList.toggle('active', item === link));
+      });
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>

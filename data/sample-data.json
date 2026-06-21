@@ -1,0 +1,113 @@
+{
+  "agents": [
+    {
+      "id": "agent_hotspot",
+      "name": "热点分析员",
+      "score": 82,
+      "role": "收集全网热门视频 Top10，分析爆火原因、受众情绪和二创价值。",
+      "inputs": ["平台热榜", "视频链接", "评论区反馈"],
+      "outputs": ["Top10 热点表", "Top3 推荐", "风险提醒"]
+    },
+    {
+      "id": "agent_editor",
+      "name": "二创剪辑员",
+      "score": 74,
+      "role": "把 Top3 热点改写成公司自己的脚本、标题、封面和剪辑方案。",
+      "inputs": ["Top3 推荐", "热点分析", "老板反馈"],
+      "outputs": ["二创脚本", "标题候选", "剪辑说明"]
+    },
+    {
+      "id": "agent_promoter",
+      "name": "推广员",
+      "score": 80,
+      "role": "制定分发计划，改写渠道文案，记录发布数据和评论洞察。",
+      "inputs": ["已审核内容", "发布渠道", "推广目标"],
+      "outputs": ["推广计划", "发布记录", "数据复盘"]
+    }
+  ],
+  "videos": [
+    {
+      "id": "video_001",
+      "rank": 1,
+      "title": "职场人下班后突然爆发的 30 秒",
+      "platform": "抖音",
+      "heatScore": 98,
+      "metrics": {
+        "views": 2300000,
+        "likes": 180000,
+        "comments": 23000,
+        "shares": 12000,
+        "favorites": 45000
+      },
+      "viralReason": "强情绪共鸣，标题制造冲突，评论区有大量二次表达。",
+      "marketingValue": "适合切入职场服务、个人 IP、老板视角内容。",
+      "riskNotes": "避免直接搬运原视频镜头和原文案。",
+      "isTop3": true
+    },
+    {
+      "id": "video_002",
+      "rank": 2,
+      "title": "3 个 AI 工具让剪辑效率翻倍",
+      "platform": "B站",
+      "heatScore": 94,
+      "metrics": {
+        "views": 860000,
+        "likes": 51000,
+        "comments": 7400,
+        "shares": 3200,
+        "favorites": 52000
+      },
+      "viralReason": "实用清单、结果明确、收藏价值高。",
+      "marketingValue": "适合做工具推荐和服务方案引流。",
+      "riskNotes": "工具推荐需要避免夸大承诺。",
+      "isTop3": true
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_analysis_top3",
+      "title": "审核 Top3 热度归因报告",
+      "ownerId": "agent_hotspot",
+      "stage": "analysis",
+      "status": "waiting_review",
+      "priority": "high",
+      "sourceVideoId": "video_001",
+      "dueAt": "2026-06-21T12:00:00+08:00",
+      "summary": "热点分析员提交了 Top3 爆火原因、受众情绪和二创价值，等待老板确认是否进入二创。"
+    },
+    {
+      "id": "task_script_top1",
+      "title": "审核 Top1 二创脚本",
+      "ownerId": "agent_editor",
+      "stage": "creative",
+      "status": "waiting_review",
+      "priority": "high",
+      "sourceVideoId": "video_001",
+      "dueAt": "2026-06-21T15:00:00+08:00",
+      "summary": "二创剪辑员提交了脚本和标题候选，需要老板判断观点是否足够、转化目标是否清楚。"
+    }
+  ],
+  "feedback": [
+    {
+      "id": "feedback_001",
+      "taskId": "task_analysis_top3",
+      "action": "note",
+      "rating": 82,
+      "comment": "方向对，审核时重点看是否补足转化价值，不要只写传播原因。",
+      "requiredChanges": ["补商业价值", "补风险判断"],
+      "createdAt": "2026-06-21T10:50:00+08:00"
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "campaign_001",
+      "title": "职场情绪热点二创分发",
+      "status": "planned",
+      "asset": "Top1 二创脚本",
+      "channels": ["小红书", "视频号", "朋友圈"],
+      "goal": "获取媒体营销咨询线索",
+      "copy": "小公司追热点，不是为了蹭流量，而是为了找到用户正在关心的问题。",
+      "insight": "预计先看收藏率、评论咨询和私信关键词。"
+    }
+  ]
+}
