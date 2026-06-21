@@ -17,7 +17,7 @@ body {
   color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-button, textarea { font: inherit; color: inherit; }
+button, textarea, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .62; }
 h1, h2, h3, p, strong, span, button, textarea { overflow-wrap: anywhere; }
@@ -85,6 +85,46 @@ h1 {
   color: var(--green);
   padding: 11px 13px;
   border-radius: 6px;
+}
+
+.agent-input {
+  margin: 16px 0 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(260px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.agent-input div {
+  display: grid;
+  gap: 4px;
+}
+
+.agent-input span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.agent-input input {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px;
+  min-width: 0;
+}
+
+.agent-input button {
+  min-height: 40px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0 14px;
+  white-space: nowrap;
 }
 
 .summary {
@@ -327,6 +367,30 @@ textarea {
   font-size: 13px;
 }
 
+.version-list {
+  display: grid;
+  gap: 8px;
+}
+
+.version-list div, .handoff {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.version-list p, .handoff p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.version-list span, .handoff span {
+  color: var(--blue);
+  font-size: 12px;
+}
+
 .mini-row {
   display: flex;
   justify-content: space-between;
@@ -362,6 +426,10 @@ textarea {
 
 @media (max-width: 900px) {
   .topbar, .focus-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-input {
     grid-template-columns: 1fr;
   }
 

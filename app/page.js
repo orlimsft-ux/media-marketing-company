@@ -25,6 +25,7 @@ export default function Home() {
   const [state, setState] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
+  const [bossLink, setBossLink] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -44,6 +45,7 @@ export default function Home() {
   const tasks = state?.tasks || [];
   const editingProjects = state?.editingProjects || [];
   const materialQueue = state?.materialQueue || [];
+  const promotionQueue = state?.promotionQueue || [];
   const videos = state?.videos || [];
 
   const visibleTasks = useMemo(() => primaryTasks(tasks), [tasks]);
@@ -119,12 +121,16 @@ export default function Home() {
     setSaving(true);
     const response = await fetch('/api/editor-agent', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourceUrl: bossLink
+      })
     });
     const payload = await response.json();
     setState(payload);
     setSelectedTaskId(primaryTasks(payload.tasks || [])[0]?.id || payload.tasks?.[0]?.id);
     setMessage(payload.editorAgentResult?.summary || '二创剪辑 Agent 已完成处理。');
+    setBossLink('');
     setSaving(false);
   }
 
@@ -134,7 +140,7 @@ export default function Home() {
 
   const pendingCount = tasks.filter(task => task.status === 'waiting_review').length;
   const activeCount = tasks.filter(task => task.status === 'in_progress').length;
-  const editorBriefCount = editingProjects.filter(project => project.editorBrief).length;
+  const editorVersionCount = editingProjects.reduce((total, project) => total + (project.editVersions?.length || 0), 0);
   const nextProject = editingProjects.find(project => project.status !== 'approved');
 
   return (
@@ -147,16 +153,28 @@ export default function Home() {
         <div className="top-actions">
           <button disabled={saving} onClick={createTodayWorkDay}>生成今日任务</button>
           <button disabled={saving} onClick={runMaterialAgent}>巡检素材</button>
-          <button disabled={saving} onClick={runEditorAgent}>运行剪辑 Agent</button>
         </div>
       </header>
+
+      <section className="agent-input">
+        <div>
+          <strong>二创剪辑 Agent</strong>
+          <span>从素材采集 Agent 接任务，或直接接收老板输入的视频链接。</span>
+        </div>
+        <input
+          value={bossLink}
+          onChange={event => setBossLink(event.target.value)}
+          placeholder="粘贴需要二创的视频链接，可留空处理素材队列"
+        />
+        <button disabled={saving} onClick={runEditorAgent}>运行剪辑 Agent</button>
+      </section>
 
       {message ? <p className="notice">{message}</p> : null}
 
       <section className="summary" aria-label="今日概况">
         <Metric label="要你处理" value={pendingCount} tone="red" />
         <Metric label="正在推进" value={activeCount} tone="blue" />
-        <Metric label="剪辑方案" value={editorBriefCount} tone="green" />
+        <Metric label="成片版本" value={editorVersionCount} tone="green" />
       </section>
 
       <section className="focus-layout">
@@ -244,6 +262,17 @@ export default function Home() {
                   <p>{nextProject.editorBrief.caption}</p>
                 </div>
               ) : null}
+              {nextProject.editVersions?.length ? (
+                <div className="version-list">
+                  {nextProject.editVersions.map(version => (
+                    <div key={version.id}>
+                      <strong>{version.id} · {version.name}</strong>
+                      <p>{version.editingStyle}</p>
+                      <span>{version.outputUrl}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="steps">
                 {(nextProject.steps || []).map(step => (
                   <span className={step.done ? 'done' : ''} key={step.name}>{step.name}</span>
@@ -265,13 +294,15 @@ export default function Home() {
           {!materialQueue.length ? <p>暂无素材队列。</p> : null}
         </Panel>
 
-        <Panel title="热点参考">
-          {videos.slice(0, 3).map(video => (
-            <div className="mini-row" key={video.id}>
-              <strong>#{video.rank} {video.title}</strong>
-              <span>{video.platform}</span>
+        <Panel title="交给推广">
+          {promotionQueue.slice(0, 3).map(item => (
+            <div className="handoff" key={item.id}>
+              <strong>{item.title}</strong>
+              <p>{item.instruction}</p>
+              <span>{item.channel} · {item.versions?.length || 0} 个版本</span>
             </div>
           ))}
+          {!promotionQueue.length ? <p>剪辑 Agent 输出成片后，会在这里交给推广 Agent。</p> : null}
         </Panel>
       </section>
     </main>
